@@ -1,0 +1,11 @@
+F:\DOSBox\Helper\bin\Debug\netcoreapp2.1\Helper.deps.json
+F:\DOSBox\Helper\bin\Debug\netcoreapp2.1\Helper.runtimeconfig.json
+F:\DOSBox\Helper\bin\Debug\netcoreapp2.1\Helper.runtimeconfig.dev.json
+F:\DOSBox\Helper\bin\Debug\netcoreapp2.1\Helper.dll
+F:\DOSBox\Helper\bin\Debug\netcoreapp2.1\Helper.pdb
+F:\DOSBox\Helper\obj\Debug\netcoreapp2.1\Helper.csprojAssemblyReference.cache
+F:\DOSBox\Helper\obj\Debug\netcoreapp2.1\Helper.csproj.CoreCompileInputs.cache
+F:\DOSBox\Helper\obj\Debug\netcoreapp2.1\Helper.AssemblyInfoInputs.cache
+F:\DOSBox\Helper\obj\Debug\netcoreapp2.1\Helper.AssemblyInfo.cs
+F:\DOSBox\Helper\obj\Debug\netcoreapp2.1\Helper.dll
+F:\DOSBox\Helper\obj\Debug\netcoreapp2.1\Helper.pdb
