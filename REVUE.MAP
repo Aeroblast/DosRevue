@@ -5,6 +5,6 @@
  0C0B0H 1BAAFH 0FA00H SBUF2                  
  1BAB0H 2B4AFH 0FA00H RENDERBUF              
  2B4B0H 2B4EFH 00040H STC                    
- 2B4F0H 2BD7EH 0088FH CODE                   
+ 2B4F0H 2BD78H 00889H CODE                   
 
-Program entry point at 2B4F:0089
+Program entry point at 2B4F:0083

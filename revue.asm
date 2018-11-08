@@ -108,14 +108,14 @@ CODE SEGMENT
  
 ;88888888888888888888888888888888888888888888888888888888888888888888888888888888
 	jmp START
-	;*****定义一个宏***** 		显示字符
-	SHOW MACRO b
+	
+	SHOW MACRO b									;显示字符测试用
 		MOV DL,b
 		MOV AH,2
 		INT 21H
 	ENDM
 	
-	KEYDOWN2 MACRO NEXT, KEYWORD, MIDI
+	KEYDOWN2 MACRO NEXT, KEYWORD, MIDI				;按键处理宏
 		CMP AL, KEYWORD	
 		JNZ NEXT
 		MOV BL, MIDI
@@ -123,12 +123,12 @@ CODE SEGMENT
 		CALL PRESS
 	ENDM
 	
-	PRESS PROC NEAR
-		POP BL
-		SHOW BL
-		MOV BH, BL
-		POP BL
-		MOV AL, 00H
+	PRESS PROC NEAR									;MIDI事件的传输子程序
+		POP BL										;弹出需要的的按下音符
+		;SHOW BL
+		MOV BH, BL	
+		POP BL										;弹出已经按下的音符
+		MOV AL, 00H									;放开已经按下的音符
 		CALL PUT_MPU_OUT
 		MOV AL, 96H
 		CALL PUT_MPU_OUT
@@ -137,8 +137,8 @@ CODE SEGMENT
 		MOV AL, 00H
 		CALL PUT_MPU_OUT
 		
-		PUSH BH
-		MOV AL, 00H
+		PUSH BH										;入栈将要按下的音符
+		MOV AL, 00H									;按下将要按下的音符
 		CALL PUT_MPU_OUT
 		MOV AL, 96H
 		CALL PUT_MPU_OUT
@@ -149,65 +149,65 @@ CODE SEGMENT
 		RET
 	PRESS ENDP
 	
-	IS_INPUT PROC NEAR
+	IS_INPUT PROC NEAR								;cpu读入信息，判断mpu是否要接收数据
 		MOV DX, STATPORT
 		IN AL,DX
 		AND AL, 80H
 		RET
 	IS_INPUT ENDP
 	
-	GET_MPU_IN PROC NEAR
+	GET_MPU_IN PROC NEAR							;cpu读入信息
 		MOV DX, DATAPORT
 		IN AL, DX
 		RET
 	GET_MPU_IN ENDP
 	
-	IS_OUTPUT PROC NEAR
+	IS_OUTPUT PROC NEAR								;cpu读入信息，检查是否可以将一个字节写入MPU的COMMAND或DATA端口。
 		MOV DX, STATPORT
 		IN AL, DX
 		AND AL, 40H
 		RET
 	IS_OUTPUT ENDP
 	
-	PUT_MPU_OUT PROC NEAR
+	PUT_MPU_OUT PROC NEAR							;cpu输出信息
 		MOV DX, DATAPORT
 		OUT DX,AL
 		RET
 	PUT_MPU_OUT ENDP
 	
-	SET_UART PROC NEAR
-		SR1:
+	SET_UART PROC NEAR								;设置串口
+		SR1:										;等待mpu不再发送数据，可以接收信息
 			CALL IS_OUTPUT
 			JNZ SHORT SR1
 			
-		MOV AL, 0FFH;
+		MOV AL, 0FFH;								;发送ffh,重置mpu
 		OUT DX, AL;
 		
-		AGAIN:
-			CALL IS_INPUT
+		AGAIN:										;
+			CALL IS_INPUT							;等待mpu要发送数据
 			JNZ SHORT AGAIN
 			
-		CALL GET_MPU_IN
-		CMP AL, 0FEH
+		CALL GET_MPU_IN								;cpu接受一个数据
+		CMP AL, 0FEH								;判断是否为期待的值， 0fe命令确认回复
 		JNE SHORT AGAIN
 		SR3:
-			CALL IS_OUTPUT
+			CALL IS_OUTPUT							;等待可以向mpu输出数据
 			JNZ SHORT SR3
 			
-		MOV AL, 03FH
+		MOV AL, 03FH								;输出3f,设置MIDI设备工作方式，intelligent 转换为 uart
 		OUT DX, AL
 		RET
 	SET_UART ENDP	
 	
-	READ0A PROC
-		MOV AX,351CH
+	READ0A PROC										;读中断向量并保存
+		MOV AX,351CH								;读入中断向量
 		INT 21H
-		MOV WORD PTR OLD0A,BX
+		MOV WORD PTR OLD0A,BX						;暂存中断向量
 		MOV WORD PTR OLD0A+2,ES
 		RET
 	READ0A ENDP
 	
-	; WRITE0A PROC
+	; WRITE0A PROC									;写中断向量
 		; MOV AX,CODE
 		; MOV DS,AX
 		; MOV DX,OFFSET SERVICE
@@ -216,15 +216,15 @@ CODE SEGMENT
 		; RET
 	; WRITE0A ENDP
 	
-	RESET PROC
-		MOV DX,WORD PTR OLD0A
+	RESET PROC										;恢复中断向量
+		MOV DX,WORD PTR OLD0A						;读取暂存的中断向量
 		MOV DS,WORD PTR OLD0A+2
-		MOV AX,251CH
+		MOV AX,251CH								;重设中断向量
 		INT 21H
 		RET
 	RESET ENDP
 	
-	; SERVICE PROC
+	; SERVICE PROC									;中断服务
 		; MOV AX,DATA
 		; MOV DS,AX
 		; DEC ICOUNT
@@ -271,8 +271,8 @@ mov ds,ax;segment
 		; push ax
 		; push dx
 		
-		CALL SET_UART
-		THAT:
+		CALL SET_UART						;初始化mpu,设置工作方式
+		THAT:								;等待可以向mpu传送数据
 		CALL IS_OUTPUT
 		JNZ SHORT THAT
 		
@@ -333,16 +333,16 @@ je timertick0
 			;do something
 			MOV SI,0
 			MOV SI,POS
-			MOV BL,[SCORE+SI]
-			CMP BL,'m'
+			MOV BL,[SCORE+SI]					;获取将要发送的MIDI事件代码
+			CMP BL,'m'							;是 m 空操作
 			JZ NORMAL
-			CMP BL,'n'
+			CMP BL,'n'							;是 n 复位音乐
 			JZ RESET0A
 			
-			MOV BL,[SCORE+SI]
+			MOV BL,[SCORE+SI]					;入栈MIDI事件代码
 			PUSH BL
-			CALL PRESS
-		NORMAL:
+			CALL PRESS							;调用MIDI事件传送子程序
+		NORMAL:									;节拍控制部分
 			INC POS
 			MOV ICOUNT,3
 			JMP EXIT
